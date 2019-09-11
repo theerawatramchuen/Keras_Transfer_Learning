@@ -20,9 +20,6 @@ from keras.models import Model
 from keras.optimizers import Adam
 
 
-# In[2]:
-
-
 base_model=MobileNet(weights='imagenet',include_top=False) #imports the mobilenet model and discards the last 1000 neuron layer.
 
 x=base_model.output
@@ -33,8 +30,6 @@ x=Dense(512,activation='relu')(x) #dense layer 3
 preds=Dense(2,activation='softmax')(x) #final layer with softmax activation
 
 
-# In[3]:
-
 
 model=Model(inputs=base_model.input,outputs=preds)
 #specify the inputs
@@ -42,16 +37,12 @@ model=Model(inputs=base_model.input,outputs=preds)
 #now a model has been created based on our architecture
 
 
-# In[4]:
-
 
 for layer in model.layers[:20]:
     layer.trainable=False
 for layer in model.layers[20:]:
     layer.trainable=True
 
-
-# In[5]:
 
 
 train_datagen=ImageDataGenerator(preprocessing_function=preprocess_input) #included in our dependencies
@@ -64,15 +55,21 @@ train_generator=train_datagen.flow_from_directory('c:/dataset/train/', # this is
                                                  shuffle=True)
 
 
-# In[33]:
-
 
 model.compile(optimizer='Adam',loss='categorical_crossentropy',metrics=['accuracy'])
 # Adam optimizer
 # loss function will be categorical cross entropy
 # evaluation metric will be accuracy
 
+# Load Saved_weight
+from pathlib import Path
+my_file = Path("saved_weights.h5")
+if my_file.is_file():
+    model.load_weights('saved_weights.h5')
+    
 step_size_train=train_generator.n//train_generator.batch_size
 model.fit_generator(generator=train_generator,
                    steps_per_epoch=step_size_train,
                    epochs=5)
+
+model.save_weights('saved_weights.h5')
